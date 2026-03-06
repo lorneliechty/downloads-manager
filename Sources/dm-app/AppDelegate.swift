@@ -56,9 +56,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let organizeItem = NSMenuItem(
             title: "Organize Now",
             action: #selector(organizeNow),
-            keyEquivalent: "o"
+            keyEquivalent: ""
         )
-        organizeItem.keyEquivalentModifierMask = [.command]
         organizeItem.target = self
         menu.addItem(organizeItem)
 
@@ -66,9 +65,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         undoItem = NSMenuItem(
             title: "Undo Last Organize",
             action: #selector(undoLastOrganize),
-            keyEquivalent: "z"
+            keyEquivalent: ""
         )
-        undoItem.keyEquivalentModifierMask = [.command]
         undoItem.target = self
         menu.addItem(undoItem)
 
@@ -90,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let quitItem = NSMenuItem(
             title: "Quit Downloads Manager",
             action: #selector(NSApplication.terminate(_:)),
-            keyEquivalent: "q"
+            keyEquivalent: ""
         )
         menu.addItem(quitItem)
 
@@ -113,16 +111,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 try ledger.save()
             }
 
-            showNotification(
-                title: "Downloads Organized",
-                body: result.filesMoved == 0
-                    ? "No files to organize."
-                    : "\(result.filesMoved) file\(result.filesMoved == 1 ? "" : "s") organized."
-                        + (result.filesSkipped > 0 ? " \(result.filesSkipped) skipped." : "")
-            )
+            let message = result.filesMoved == 0
+                ? "No files to organize."
+                : "\(result.filesMoved) file\(result.filesMoved == 1 ? "" : "s") organized."
+                    + (result.filesSkipped > 0 ? " \(result.filesSkipped) skipped." : "")
+            showStatusFlash(message)
 
         } catch {
-            showNotification(title: "Organize Failed", body: error.localizedDescription)
+            showError(title: "Organize Failed", body: error.localizedDescription)
         }
     }
 
@@ -130,7 +126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var ledger = UndoLedger.load()
 
         guard ledger.hasUndoableOperation else {
-            showNotification(title: "Nothing to Undo", body: "No organize operation to revert.")
+            showStatusFlash("Nothing to undo.")
             return
         }
 
@@ -138,14 +134,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let (restored, errors) = try organizer.undo(ledger: &ledger)
             try ledger.save()
 
-            var body = "\(restored) file\(restored == 1 ? "" : "s") restored."
+            var message = "\(restored) file\(restored == 1 ? "" : "s") restored."
             if !errors.isEmpty {
-                body += " \(errors.count) error\(errors.count == 1 ? "" : "s")."
+                message += " \(errors.count) error\(errors.count == 1 ? "" : "s")."
             }
-            showNotification(title: "Undo Complete", body: body)
+            showStatusFlash(message)
 
         } catch {
-            showNotification(title: "Undo Blocked", body: error.localizedDescription)
+            showError(title: "Undo Blocked", body: error.localizedDescription)
         }
     }
 
@@ -161,7 +157,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     sender.state = .on
                 }
             } catch {
-                showNotification(
+                showError(
                     title: "Launch at Login",
                     body: "Could not update setting: \(error.localizedDescription)"
                 )
@@ -224,14 +220,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func showNotification(title: String, body: String) {
-        // Use NSUserNotification replacement: just show an alert for now.
-        // A proper UNUserNotification setup requires an app bundle with
-        // entitlements, so we use a simple alert dialog.
+    /// Show a brief non-modal flash in the menu bar title, then revert to the icon.
+    private func showStatusFlash(_ message: String) {
+        if let button = statusItem.button {
+            let originalImage = button.image
+            button.image = nil
+            button.title = message
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                button.title = ""
+                button.image = originalImage
+                self?.refreshMenuState()
+            }
+        }
+    }
+
+    /// Show a modal alert for errors only.
+    private func showError(title: String, body: String) {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = body
-        alert.alertStyle = .informational
+        alert.alertStyle = .warning
         alert.addButton(withTitle: "OK")
         alert.runModal()
     }

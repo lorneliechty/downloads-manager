@@ -158,8 +158,8 @@ t.run("Organize: moves files into age bucket + date+time folder") {
     try t.assertEqual(result.filesMoved, 2)
     try t.assertFalse(exists(in: dir, "report.pdf"), "report.pdf should be moved from root")
     try t.assertFalse(exists(in: dir, "photo.png"), "photo.png should be moved from root")
-    try t.assertTrue(exists(in: dir, "Recent/\(dtName)/report.pdf"))
-    try t.assertTrue(exists(in: dir, "Recent/\(dtName)/photo.png"))
+    try t.assertTrue(exists(in: dir, "1_ Recent/\(dtName)/report.pdf"))
+    try t.assertTrue(exists(in: dir, "1_ Recent/\(dtName)/photo.png"))
 }
 
 t.run("Organize: moves folders as units") {
@@ -177,8 +177,8 @@ t.run("Organize: moves folders as units") {
 
     try t.assertEqual(result.filesMoved, 1, "Folder should be moved as one unit")
     try t.assertFalse(exists(in: dir, "ProjectX"), "ProjectX should be moved from root")
-    try t.assertTrue(exists(in: dir, "Recent/\(dtName)/ProjectX/readme.md"))
-    try t.assertTrue(exists(in: dir, "Recent/\(dtName)/ProjectX/code.swift"))
+    try t.assertTrue(exists(in: dir, "1_ Recent/\(dtName)/ProjectX/readme.md"))
+    try t.assertTrue(exists(in: dir, "1_ Recent/\(dtName)/ProjectX/code.swift"))
 }
 
 t.run("Organize: skips partial downloads") {
@@ -224,7 +224,7 @@ t.run("Organize: old files go to correct age bucket") {
     try t.assertEqual(result.filesMoved, 1)
     // The file's mod date is 45 days ago, but the organize-run folder name uses "now"
     // The file should land in "Older than 30 Days" bucket
-    try t.assertTrue(exists(in: dir, "Older than 30 Days/\(dtName)/old_report.pdf"))
+    try t.assertTrue(exists(in: dir, "2_ Older than 30 Days/\(dtName)/old_report.pdf"))
 }
 
 t.run("Organize: very old files go to >1yr bucket") {
@@ -239,7 +239,7 @@ t.run("Organize: very old files go to >1yr bucket") {
     let dtName = dateTimeFolderName()
 
     try t.assertEqual(result.filesMoved, 1)
-    try t.assertTrue(exists(in: dir, "Older than 1 Year/\(dtName)/ancient.txt"))
+    try t.assertTrue(exists(in: dir, "4_ Older than 1 Year/\(dtName)/ancient.txt"))
 }
 
 t.run("Organize: mixed-age files go to different buckets") {
@@ -254,16 +254,16 @@ t.run("Organize: mixed-age files go to different buckets") {
     let dtName = dateTimeFolderName()
 
     try t.assertEqual(result.filesMoved, 2)
-    try t.assertTrue(exists(in: dir, "Recent/\(dtName)/recent.pdf"))
-    try t.assertTrue(exists(in: dir, "Older than 30 Days/\(dtName)/old.pdf"))
+    try t.assertTrue(exists(in: dir, "1_ Recent/\(dtName)/recent.pdf"))
+    try t.assertTrue(exists(in: dir, "2_ Older than 30 Days/\(dtName)/old.pdf"))
 }
 
 t.run("Organize: skips own age bucket folders") {
     let dir = makeTempDir()
     defer { cleanup(dir) }
 
-    // Pre-create a "Recent" bucket folder (as if from a previous organize)
-    let recentDir = dir.appendingPathComponent("Recent")
+    // Pre-create a bucket folder (as if from a previous organize)
+    let recentDir = dir.appendingPathComponent("1_ Recent")
     try fm.createDirectory(at: recentDir, withIntermediateDirectories: true)
     let dtFolder = recentDir.appendingPathComponent("2026-03-01 10.00")
     try fm.createDirectory(at: dtFolder, withIntermediateDirectories: true)
@@ -277,7 +277,7 @@ t.run("Organize: skips own age bucket folders") {
 
     // Should only organize the new root file, not touch existing bucket contents
     try t.assertEqual(result.filesMoved, 1, "Only the new root file should be moved")
-    try t.assertTrue(exists(in: dir, "Recent/2026-03-01 10.00/old_organized.pdf"),
+    try t.assertTrue(exists(in: dir, "1_ Recent/2026-03-01 10.00/old_organized.pdf"),
         "Previously organized file should remain")
 }
 
@@ -285,8 +285,8 @@ t.run("Organize: re-buckets aged date+time folders") {
     let dir = makeTempDir()
     defer { cleanup(dir) }
 
-    // Create a date+time folder in "Recent" that's actually 45 days old
-    let recentDir = dir.appendingPathComponent("Recent")
+    // Create a date+time folder in "1_ Recent" that's actually 45 days old
+    let recentDir = dir.appendingPathComponent("1_ Recent")
     try fm.createDirectory(at: recentDir, withIntermediateDirectories: true)
 
     let oldDate = daysAgo(45)
@@ -299,9 +299,9 @@ t.run("Organize: re-buckets aged date+time folders") {
     let result = try o.organize(directory: dir.path)
 
     // The folder should be re-bucketed from Recent to Older than 30 Days
-    try t.assertFalse(exists(in: dir, "Recent/\(oldFolderName)"),
+    try t.assertFalse(exists(in: dir, "1_ Recent/\(oldFolderName)"),
         "Old folder should be removed from Recent")
-    try t.assertTrue(exists(in: dir, "Older than 30 Days/\(oldFolderName)/aged_file.pdf"),
+    try t.assertTrue(exists(in: dir, "2_ Older than 30 Days/\(oldFolderName)/aged_file.pdf"),
         "Old folder should be moved to >30 Days bucket")
 }
 
@@ -449,7 +449,7 @@ t.run("Undo: blocked when new file added") {
 
     // Add a new file to the organized area
     let dtName = dateTimeFolderName()
-    createFile(in: dir, name: "Recent/\(dtName)/intruder.txt")
+    createFile(in: dir, name: "1_ Recent/\(dtName)/intruder.txt")
 
     let reason = ledger.validateStateForUndo()
     try t.assertNotNil(reason, "Undo should be blocked when new files appear")
@@ -552,7 +552,7 @@ t.run("Undo: ledger persistence round-trips") {
 
     var ledger = UndoLedger()
     ledger.record(
-        moves: [FileMove(source: "/a/b.txt", destination: "/a/Recent/2026-03-06 14.32/b.txt")],
+        moves: [FileMove(source: "/a/b.txt", destination: "/a/_1_ Recent/2026-03-06 14.32/b.txt")],
         targetDirectory: "/a"
     )
 

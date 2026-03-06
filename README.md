@@ -18,7 +18,7 @@ Downloads Manager sits in your menu bar and organizes files and folders in your 
 
 ```
 ~/Downloads/
-  Recent/
+  1_ Recent/
     2026-03-06 14.32/
       report.pdf
       screenshot.png
@@ -27,13 +27,13 @@ Downloads Manager sits in your menu bar and organizes files and folders in your 
           main.swift
     2026-03-05 09.15/
       backup.zip
-  Older than 30 Days/
+  2_ Older than 30 Days/
     2026-02-01 11.20/
       notes.txt
-  Older than 90 Days/
+  3_ Older than 90 Days/
     2025-11-15 16.45/
       old_installer.dmg
-  Older than 1 Year/
+  4_ Older than 1 Year/
     2025-01-10 08.30/
       ancient_archive.zip
 ```

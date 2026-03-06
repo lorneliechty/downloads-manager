@@ -10,10 +10,10 @@ Files and folders are organized into **age-based buckets** first, then into **da
 
 Four buckets based on how old the content is (by modification time):
 
-- **Recent** — 0–30 days old
-- **Older than 30 Days** — 31–90 days old
-- **Older than 90 Days** — 91–365 days old
-- **Older than 1 Year** — 366+ days old
+- **1_ Recent** — 0–30 days old
+- **2_ Older than 30 Days** — 31–90 days old
+- **3_ Older than 90 Days** — 91–365 days old
+- **4_ Older than 1 Year** — 366+ days old
 
 ### Date+Time Folders
 
@@ -21,21 +21,23 @@ Within each age bucket, items are grouped into folders named by the organize run
 
 ```
 ~/Downloads/
-  Recent/
+  1_ Recent/
     2026-03-06 14.32/
       report.pdf
       screenshot.png
       ProjectFolder/         ← folder group kept intact
     2026-03-05 09.15/
       backup.zip
-  Older than 30 Days/
+  2_ Older than 30 Days/
     2026-02-01 11.20/
       notes.txt
-  Older than 90 Days/
+  3_ Older than 90 Days/
     ...
-  Older than 1 Year/
+  4_ Older than 1 Year/
     ...
 ```
+
+The `N_` prefixes ensure age buckets sort correctly (newest first) when Finder sorts by name.
 
 ### Re-bucketing
 
