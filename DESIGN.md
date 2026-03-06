@@ -61,6 +61,15 @@ The undo system records every move in a ledger. Before executing an undo, it val
 
 Finder-style rename on collision: `report.pdf` → `report (1).pdf` → `report (2).pdf`. This matches what macOS users expect.
 
+## Menu Bar Icon State
+
+The menu bar icon reflects the state of the Downloads folder:
+
+- **Clean** (template icon, adapts to light/dark): No unsorted items in root — only DM-managed bucket folders.
+- **Dirty** (filled icon, light green tint): Root contains files or folders that haven't been organized yet.
+
+The icon updates in real time via an FSEvents watcher on `~/Downloads` (500ms latency). It also refreshes on app launch and when the menu opens.
+
 ## No Auto-Organize
 
 Not in scope. No FSEvents watcher, no scheduled runs. Manual "Organize Now" only. This may be revisited after extended manual use.

@@ -575,6 +575,66 @@ t.run("Undo: load returns empty for missing file") {
 }
 
 // ============================================================
+// MARK: - hasUnsortedItems Tests
+// ============================================================
+
+t.run("Status: empty directory has no unsorted items") {
+    let dir = makeTempDir()
+    defer { cleanup(dir) }
+
+    let o = FileOrganizer()
+    try t.assertFalse(o.hasUnsortedItems(in: dir.path))
+}
+
+t.run("Status: directory with only bucket folders has no unsorted items") {
+    let dir = makeTempDir()
+    defer { cleanup(dir) }
+
+    for bucket in AgeBucket.allCases {
+        try fm.createDirectory(
+            at: dir.appendingPathComponent(bucket.rawValue),
+            withIntermediateDirectories: true
+        )
+    }
+
+    let o = FileOrganizer()
+    try t.assertFalse(o.hasUnsortedItems(in: dir.path))
+}
+
+t.run("Status: directory with a loose file has unsorted items") {
+    let dir = makeTempDir()
+    defer { cleanup(dir) }
+
+    createFile(in: dir, name: "stray.pdf")
+
+    let o = FileOrganizer()
+    try t.assertTrue(o.hasUnsortedItems(in: dir.path))
+}
+
+t.run("Status: directory with a non-DM folder has unsorted items") {
+    let dir = makeTempDir()
+    defer { cleanup(dir) }
+
+    createDir(in: dir, name: "My Project")
+
+    let o = FileOrganizer()
+    try t.assertTrue(o.hasUnsortedItems(in: dir.path))
+}
+
+t.run("Status: after organizing, no unsorted items remain") {
+    let dir = makeTempDir()
+    defer { cleanup(dir) }
+
+    createFile(in: dir, name: "report.pdf")
+
+    let o = FileOrganizer()
+    try t.assertTrue(o.hasUnsortedItems(in: dir.path), "Should have unsorted items before organize")
+
+    _ = try o.organize(directory: dir.path)
+    try t.assertFalse(o.hasUnsortedItems(in: dir.path), "Should be clean after organize")
+}
+
+// ============================================================
 // Results
 // ============================================================
 

@@ -52,6 +52,27 @@ public final class FileOrganizer {
         self.fileManager = fileManager
     }
 
+    // MARK: - Status
+
+    /// Returns true if the root of the directory contains any items that are not
+    /// DM-managed folders (age buckets or date+time folders). Used to determine
+    /// whether the menu bar icon should indicate unorganized content.
+    public func hasUnsortedItems(in directory: String) -> Bool {
+        let dirURL = URL(fileURLWithPath: directory)
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: dirURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return false }
+
+        for item in contents {
+            if isAgeBucketFolder(item) { continue }
+            if isDateTimeFolder(item) { continue }
+            return true
+        }
+        return false
+    }
+
     // MARK: - Organize
 
     /// Organize the target directory.
