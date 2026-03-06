@@ -15,7 +15,7 @@ public struct UndoLedger: Codable {
     }
 
     /// The moves from the last organize operation.
-    var lastMoves: [FileMove]
+    public internal(set) var lastMoves: [FileMove]
 
     /// Snapshot of the target directory state immediately after the last organize.
     /// This captures every file (recursively) in every date/type folder that was
@@ -24,10 +24,10 @@ public struct UndoLedger: Codable {
     var postOrganizeSnapshot: [FileSnapshot]
 
     /// The root directory that was organized.
-    var targetDirectory: String
+    public internal(set) var targetDirectory: String
 
     /// Timestamp of the last organize.
-    var organizedAt: Date
+    public internal(set) var organizedAt: Date
 
     public init() {
         self.lastMoves = []
@@ -42,7 +42,7 @@ public struct UndoLedger: Codable {
     }
 
     /// Record a completed organize operation.
-    mutating func record(moves: [FileMove], targetDirectory: String, fileManager: FileManager = .default) {
+    public mutating func record(moves: [FileMove], targetDirectory: String, fileManager: FileManager = .default) {
         self.lastMoves = moves
         self.targetDirectory = targetDirectory
         self.organizedAt = Date()
@@ -51,7 +51,7 @@ public struct UndoLedger: Codable {
 
     /// Validate that the folder state hasn't changed since the organize.
     /// Returns nil if safe to undo, or a description of what changed if not.
-    func validateStateForUndo(fileManager: FileManager = .default) -> String? {
+    public func validateStateForUndo(fileManager: FileManager = .default) -> String? {
         guard hasUndoableOperation else {
             return "No organize operation to undo."
         }
@@ -98,7 +98,7 @@ public struct UndoLedger: Codable {
     }
 
     /// Clear the ledger after a successful undo.
-    mutating func clear() {
+    public mutating func clear() {
         lastMoves = []
         postOrganizeSnapshot = []
         targetDirectory = ""

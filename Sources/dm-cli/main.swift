@@ -24,7 +24,7 @@ case "organize":
     do {
         let result = try organizer.organize(directory: directory)
 
-        print("Done. \(result.filesMoved) files moved, \(result.filesSkipped) skipped.")
+        print("Done. \(result.filesMoved) item\(result.filesMoved == 1 ? "" : "s") moved, \(result.filesSkipped) skipped.")
 
         if !result.moves.isEmpty {
             // Save undo ledger
