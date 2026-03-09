@@ -72,7 +72,7 @@ The icon updates in real time via an FSEvents watcher on `~/Downloads` (500ms la
 
 ## No Auto-Organize
 
-Not in scope. No FSEvents watcher, no scheduled runs. Manual "Organize Now" only. This may be revisited after extended manual use.
+Not in scope. The FSEvents watcher is used only for icon state — it does not trigger automatic organization. No scheduled runs. Manual "Organize Now" only. This may be revisited after extended manual use.
 
 ## Partial Downloads
 
